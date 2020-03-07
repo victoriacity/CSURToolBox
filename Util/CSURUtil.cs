@@ -46,6 +46,17 @@ namespace CSURToolBox.Util
             return m.Success && (!m1.Success);
         }
 
+        public static bool IsCSURNoJunction(NetInfo asset)
+        {
+            if (asset == null || (asset.m_netAI.GetType() != typeof(RoadAI) && asset.m_netAI.GetType() != typeof(RoadBridgeAI) && asset.m_netAI.GetType() != typeof(RoadTunnelAI)))
+            {
+                return false;
+            }
+            string savenameStripped = asset.name.Substring(asset.name.IndexOf('.') + 1);
+            Match m = Regex.Match(savenameStripped, CSUR_OFFSET_REGEX, RegexOptions.IgnoreCase);
+            return m.Success;
+        }
+
         public static bool IsCSURDual(NetInfo asset)
         {
             if (asset == null || (asset.m_netAI.GetType() != typeof(RoadAI) && asset.m_netAI.GetType() != typeof(RoadBridgeAI) && asset.m_netAI.GetType() != typeof(RoadTunnelAI)))
