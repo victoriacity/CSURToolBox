@@ -1,18 +1,13 @@
-﻿using ColossalFramework;
-using ColossalFramework.Math;
+﻿using ColossalFramework.Math;
 using ICities;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using UnityEngine;
-using ColossalFramework.Globalization;
 using System.Reflection;
-using System.IO;
 using CSURToolBox.Util;
 using ColossalFramework.UI;
 using CSURToolBox.CustomData;
 using CSURToolBox.CustomAI;
+using HarmonyLib;
 
 namespace CSURToolBox
 {
@@ -20,7 +15,7 @@ namespace CSURToolBox
     {
         public static bool isFirstTime = true;
         public static Assembly MoveIt = null;
-        public const int HarmonyPatchNum = 14;
+        public const int HarmonyPatchNum = 15;
 
         public override void OnBeforeSimulationFrame()
         {
@@ -101,7 +96,7 @@ namespace CSURToolBox
         {
             if (isFirstTime)
             { 
-                if (Loader.DetourInited)
+                if (Loader.DetourInited && Loader.HarmonyDetourInited)
                 {
                     isFirstTime = false;
                     DetourAfterLoad();
@@ -142,15 +137,15 @@ namespace CSURToolBox
                     }
                     else
                     {
-                        var harmony = new Harmony.Harmony(HarmonyDetours.Id);
+                        var harmony = new Harmony(HarmonyDetours.Id);
                         var methods = harmony.GetPatchedMethods();
                         int i = 0;
                         foreach (var method in methods)
                         {
-                            var info = Harmony.Harmony.GetPatchInfo(method);
+                            var info = Harmony.GetPatchInfo(method);
                             if (info.Owners?.Contains(HarmonyDetours.Id) == true)
                             {
-                                DebugLog.LogToFileOnly("Harmony patch method = " + method.Name.ToString());
+                                DebugLog.LogToFileOnly($"Harmony patch method = {method.FullDescription()}");
                                 if (info.Prefixes.Count != 0)
                                 {
                                     DebugLog.LogToFileOnly("Harmony patch method has PreFix");

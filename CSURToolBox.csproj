@@ -32,15 +32,14 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="0Harmony, Version=1.9.9.9, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>bin\Debug\0Harmony.dll</HintPath>
-    </Reference>
-    <Reference Include="0Harmony1.9">
-      <HintPath>..\0Harmony1.9.dll</HintPath>
+    <Reference Include="0Harmony, Version=2.0.0.9, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Lib.Harmony.2.0.0.9\lib\net35\0Harmony.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp">
       <HintPath>F:\SteamLibrary\steamapps\common\Cities_Skylines\Cities_Data\Managed\Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="CitiesHarmony.API, Version=1.0.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\CitiesHarmony.API.1.0.4\lib\net35\CitiesHarmony.API.dll</HintPath>
     </Reference>
     <Reference Include="ColossalManaged">
       <HintPath>F:\SteamLibrary\steamapps\common\Cities_Skylines\Cities_Data\Managed\ColossalManaged.dll</HintPath>
@@ -68,6 +67,7 @@
     <Compile Include="Patch\BuildingFindParentNodePatch.cs" />
     <Compile Include="Patch\NetNodeCountSegmentsPatch.cs" />
     <Compile Include="Patch\NetNodeCalculateNodePatch.cs" />
+    <Compile Include="Patch\NetSegmentGetLeftAndRightLanesPatch.cs" />
     <Compile Include="Patch\NetSegmentCalculateCornerPatch.cs" />
     <Compile Include="Patch\NetSegmentOverlapQuadPatch.cs" />
     <Compile Include="Patch\NetManagerOverlapQuadPatch.cs" />
@@ -95,7 +95,9 @@
     <Compile Include="Util\RedirectionHelper.cs" />
     <Compile Include="Util\SpriteUtilities.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <ItemGroup>
     <Content Include="PreviewImage.png" />
     <Content Include="Resources\CSUR.png" />
