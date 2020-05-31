@@ -48,7 +48,6 @@ namespace CSURToolBox.UI
         public static int fromSelected;
         public static int toSelected;
         public static byte symmetry;
-        public static bool uturnLane;
         public static bool hasSidewalk;
         public static bool hasBike;
 
@@ -65,7 +64,6 @@ namespace CSURToolBox.UI
             fromSelected = 0;
             toSelected = 0;
             symmetry = 255;
-            uturnLane = false;
             hasSidewalk = true;
             hasBike = true;
             //UI
@@ -302,6 +300,17 @@ namespace CSURToolBox.UI
         }
         public void symButton_OnCheckChanged()
         {
+            /* Symmetry definitions:
+             * 0 - symmetric two-way road
+             * 1 - asymmetrical two-way road with +1 lane forward
+             * 2 - asymmetrical two-way road with +2 lane forward
+             * 127 - symmetric two-way road with a U-turn lane, need to restore symmetry=0 to find prefab
+             * 255 - one-way road
+             * Also need to check U-turn for base and transition modules
+             */
+
+            symmetry = Parser.TryNextSymmetry(symmetry, fromSelected, toSelected, hasSidewalk, hasBike);
+            /*
             if (symmetry == 255)
             {
                 symmetry = 0;
@@ -398,7 +407,7 @@ namespace CSURToolBox.UI
                 m_symButton.normalBgSprite = "0_S";
                 symmetry = 255;
                 uturnLane = false;
-            }
+            }*/
         }
         public void hasSideWalkButton_OnCheckChanged()
         {
@@ -437,9 +446,9 @@ namespace CSURToolBox.UI
                     m_toLabel.text = Localization.Get("To");
                     //DebugLog.LogToFileOnly("fromSelected = " + fromSelected.ToString() + " toSelected = " + toSelected.ToString() + " symmetry = " + symmetry.ToString() + " uturnLane: " + uturnLane.ToString() + " hasSidewalk: " + hasSidewalk.ToString());
 
-                    var m_currentModule = Parser.ModuleNameFromUI(fromSelected, toSelected, symmetry, uturnLane, hasSidewalk, hasBike);
                     //DebugLog.LogToFileOnly(m_currentModule);
-                    var m_prefab = PrefabCollection<NetInfo>.FindLoaded(m_currentModule + "_Data");
+                    var m_prefab = Parser.NetInfoFromUI(fromSelected, toSelected, symmetry, hasSidewalk, hasBike);
+                    m_prefab = UpdateRoadVariant(m_prefab);
                     if (m_prefab != null)
                     {
                         m_netTool = ToolsModifierControl.SetTool<NetTool>();
@@ -462,6 +471,82 @@ namespace CSURToolBox.UI
                 }
             }
         }
+
+
+        private NetInfo UpdateRoadVariant(NetInfo prefab)
+        {
+            if (hasSidewalk && !hasBike)
+            {
+                if (prefab == null)
+                {
+                    prefab = Parser.NetInfoFromUI(fromSelected, toSelected, symmetry, false, false);
+                    if (prefab != null)
+                    {
+                        hasSidewalk = false;
+                        hasBike = false;
+                    }
+                } else
+                {
+                    m_hasSideWalkButton.normalBgSprite = "SIDEWALK";
+                }
+            }
+            if (!hasSidewalk && !hasBike)
+            {
+                if (prefab == null)
+                {
+                    prefab = Parser.NetInfoFromUI(fromSelected, toSelected, symmetry, true, true);
+                    if (prefab != null)
+                    {
+                        hasSidewalk = true;
+                        hasBike = true;
+                    }
+                }
+                else
+                {
+                    m_hasSideWalkButton.normalBgSprite = "NOSIDEWALK";
+                }
+            }
+            if (hasSidewalk && hasBike)
+            {
+                m_hasSideWalkButton.normalBgSprite = "BIKE";
+            }
+  
+
+            // Fall back uturn and asymmetrical modules
+            // Do not fall back for symmetric two-way because a user may
+            // switch between multiple two-way roads, such as 4DR and 8DR
+           if ((symmetry == 2 || symmetry == 1 || symmetry == 127) && prefab == null)
+           {
+                symmetry = 0;
+                prefab = Parser.NetInfoFromUI(fromSelected, toSelected, symmetry, hasSidewalk, hasBike);
+            }
+
+
+            // Update symmetry sprites
+            if (symmetry == 127)
+            {
+                m_symButton.normalBgSprite = "UTURN_S";
+            }
+            else if (symmetry == 255)
+            {
+                m_symButton.normalBgSprite = "0_S";
+            }
+            else if (symmetry == 0)
+            {
+                m_symButton.normalBgSprite = "+0";
+            }
+            else if (symmetry == 1)
+            {
+                m_symButton.normalBgSprite = "+1";
+            }
+            else if (symmetry == 2)
+            {
+                m_symButton.normalBgSprite = "+2";
+            }
+
+            return prefab;
+        }
+
         private void RefreshData()
         {
             for (int i = 0; i < N_POS_INT; i++)
